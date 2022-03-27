@@ -1,11 +1,46 @@
 'use strict';
 
+const State = {
+  secretNumber: 0,
+  score: 20,
+  highscore: 0,
+
+  degreeScore: function () {
+    if (this.score === 0) {
+      return Display.updateField('message', 'You Lose');
+    }
+    this.score--;
+    Display.updateField('score', this.score);
+  },
+
+  check: function (value) {
+    if (value > this.secretNumber) {
+      Display.updateField('message', 'To Higher');
+      this.degreeScore();
+    } else if (value < this.secretNumber) {
+      Display.updateField('message', 'To Low');
+      this.degreeScore();
+    } else {
+      Display.updateField('message', 'You win');
+      this.win();
+    }
+  },
+
+  win: function () {
+    if (this.score > this.highscore) {
+      this.highscore = this.score;
+      Display.gameWin(this.highscore, this.secretNumber);
+    }
+  },
+};
+
 const Display = {
   number: document.querySelector('.number'),
   message: document.querySelector('.message'),
   score: document.querySelector('.score'),
   highscore: document.querySelector('.highscore'),
   guess: document.querySelector('.guess'),
+  body: document.querySelector('body'),
 
   getValues: function () {
     return {
@@ -14,49 +49,34 @@ const Display = {
       score: this.score,
       highscore: this.highscore,
       guess: this.guess,
+      body: this.body,
     };
   },
 
-  reset: function (secretNumber) {
-    let { number, message, score, highscore, guess } = this.getValues();
+  reset: function () {
+    let { number, message, score, highscore, guess, body } = this.getValues();
 
-    number.textContent = secretNumber;
+    number.textContent = '?';
     message.textContent = 'Start guessing..';
     score.textContent = 20;
-    highscore.textContent = 0;
     guess.value = '';
+    guess.removeAttribute('disabled');
+    body.removeAttribute('style');
   },
 
-  updateDisplay: function (field, value) {
+  updateField: function (field, value) {
     const fields = this.getValues();
 
     fields[field].textContent = value;
   },
-};
 
-const State = {
-  secretNumber: 0,
-  score: 20,
-  highscore: 0,
+  gameWin: function (newScore, secretNumber) {
+    let { guess, highscore, body, number } = this.getValues();
 
-  degreeScore: function () {
-    if (this.score === 0) {
-      return Display.updateDisplay('message', 'You Lose');
-    }
-    this.score--;
-    Display.updateDisplay('score', this.score);
-  },
-
-  check: function (value) {
-    if (value > this.secretNumber) {
-      Display.updateDisplay('message', 'To Higher');
-      this.degreeScore();
-    } else if (value < this.secretNumber) {
-      Display.updateDisplay('message', 'To Low');
-      this.degreeScore();
-    } else {
-      Display.updateDisplay('message', 'You win');
-    }
+    number.textContent = secretNumber;
+    highscore.textContent = newScore;
+    body.style.backgroundColor = '#60b347';
+    guess.setAttribute('disabled', 'disabled');
   },
 };
 
@@ -67,6 +87,7 @@ const Game = {
   },
 
   again: function () {
+    State.score = 20;
     this.init();
   },
 };
